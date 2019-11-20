@@ -5,9 +5,8 @@ PHP_ARG_WITH(rdkafka, for rdkafka support,
 [  --with-rdkafka             Include rdkafka support])
 
 if test "$PHP_RDKAFKA" != "no"; then
-  PHP_REQUIRE_CXX()
   PHP_SUBST(RDKAFKA_SHARED_LIBADD)
-  CXXFLAGS="$CXXFLAGS -Wall -Wno-unused-function -Wno-deprecated -Wno-deprecated-declarations"
+  CPPFLAGS="$CPPFLAGS -Wall -Wno-unused-function -Wno-deprecated -Wno-deprecated-declarations"
   RDKAFKA_SOURCE_DIR="lib/librdkafka/src"
   SOURCES="${RDKAFKA_SOURCE_DIR}/crc32c.c \
   ${RDKAFKA_SOURCE_DIR}/rdaddr.c \
@@ -42,6 +41,7 @@ if test "$PHP_RDKAFKA" != "no"; then
   ${RDKAFKA_SOURCE_DIR}/rdkafka_range_assignor.c \
   ${RDKAFKA_SOURCE_DIR}/rdkafka_request.c \
   ${RDKAFKA_SOURCE_DIR}/rdkafka_roundrobin_assignor.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_zstd.c \
   ${RDKAFKA_SOURCE_DIR}/rdkafka_sasl_cyrus.c \
   ${RDKAFKA_SOURCE_DIR}/rdkafka_sasl.c \
   ${RDKAFKA_SOURCE_DIR}/rdkafka_sasl_oauthbearer.c \
@@ -77,7 +77,10 @@ if test "$PHP_RDKAFKA" != "no"; then
   AC_CHECK_LIB(z, gzgets, [
       PHP_ADD_LIBRARY(z, 1, SWOOLE_SHARED_LIBADD)
   ])
+  
+  PHP_ADD_LIBRARY(zstd, 1, SWOOLE_SHARED_LIBADD)
   PHP_ADD_LIBRARY(ssl, 1, SWOOLE_SHARED_LIBADD)
+  PHP_ADD_LIBRARY(sasl2, 1, SWOOLE_SHARED_LIBADD)
   PHP_ADD_LIBRARY(crypto, 1, SWOOLE_SHARED_LIBADD)
 
   PHP_NEW_EXTENSION(rdkafka, $SOURCES, $ext_shared,,-DZEND_ENABLE_STATIC_TSRMLS_CACHE=1)
