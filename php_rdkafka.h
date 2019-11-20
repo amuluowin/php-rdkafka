@@ -21,7 +21,7 @@
 #ifndef PHP_RDKAFKA_H
 #define PHP_RDKAFKA_H
 
-#include "librdkafka/rdkafka.h"
+#include "lib/librdkafka/src/rdkafka.h"
 #include "compat.h"
 #include "conf.h"
 

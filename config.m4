@@ -5,82 +5,81 @@ PHP_ARG_WITH(rdkafka, for rdkafka support,
 [  --with-rdkafka             Include rdkafka support])
 
 if test "$PHP_RDKAFKA" != "no"; then
-
-  SEARCH_PATH="/usr/local /usr"     # you might want to change this
-  SEARCH_FOR="/include/librdkafka/rdkafka.h"  # you most likely want to change this
-  if test -r $PHP_RDKAFKA/$SEARCH_FOR; then # path given as parameter
-    RDKAFKA_DIR=$PHP_RDKAFKA
-  else # search default path list
-    AC_MSG_CHECKING([for librdkafka/rdkafka.h" in default path])
-    for i in $SEARCH_PATH ; do
-      if test -r $i/$SEARCH_FOR; then
-        RDKAFKA_DIR=$i
-        AC_MSG_RESULT(found in $i)
-      fi
-    done
-  fi
-  
-  if test -z "$RDKAFKA_DIR"; then
-    AC_MSG_RESULT([not found])
-    AC_MSG_ERROR([Please reinstall the rdkafka distribution])
-  fi
-
-  PHP_ADD_INCLUDE($RDKAFKA_DIR/include)
-
-  SOURCES="rdkafka.c metadata.c metadata_broker.c metadata_topic.c metadata_partition.c metadata_collection.c compat.c conf.c topic.c queue.c message.c fun.c kafka_consumer.c topic_partition.c"
-
-  LIBNAME=rdkafka
-  LIBSYMBOL=rd_kafka_new
-
-  PHP_CHECK_LIBRARY($LIBNAME,$LIBSYMBOL,
-  [
-    PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $RDKAFKA_DIR/$PHP_LIBDIR, RDKAFKA_SHARED_LIBADD)
-    AC_DEFINE(HAVE_RDKAFKALIB,1,[ ])
-  ],[
-    AC_MSG_ERROR([wrong rdkafka lib version or lib not found])
-  ],[
-    -L$RDKAFKA_DIR/$PHP_LIBDIR -lm
-  ])
-
-  ORIG_LDFLAGS="$LDFLAGS"
-  ORIG_CPPFLAGS="$CPPFLAGS"
-  LDFLAGS="-L$RDKAFKA_DIR/$PHP_LIBDIR -lm"
-  CPPFLAGS="-I$RDKAFKA_DIR/include"
-
-  AC_MSG_CHECKING([for librdkafka version])
-  AC_EGREP_CPP(yes,[
-#include <librdkafka/rdkafka.h>
-#if RD_KAFKA_VERSION >= 0x000b0000
-  yes
-#endif
-  ],[
-    AC_MSG_RESULT([>= 0.11.0])
-  ],[
-    AC_MSG_ERROR([librdkafka version 0.11.0 or greater required.])
-  ])
-
-  AC_CHECK_LIB($LIBNAME,[rd_kafka_message_headers],[
-    AC_DEFINE(HAVE_RD_KAFKA_MESSAGE_HEADERS,1,[ ])
-  ],[
-    AC_MSG_WARN([no rd_kafka_message_headers, headers support will not be available])
-  ])
-
-  AC_CHECK_LIB($LIBNAME,[rd_kafka_purge],[
-    AC_DEFINE(HAS_RD_KAFKA_PURGE,1,[ ])
-  ],[
-    AC_MSG_WARN([purge is not available])
-  ])
-
-  AC_CHECK_LIB($LIBNAME,[rd_kafka_msg_partitioner_murmur2],[
-    AC_DEFINE(HAS_RD_KAFKA_PARTITIONER_MURMUR2,1,[ ])
-  ],[
-    AC_MSG_WARN([murmur2 partitioner is not available])
-  ])
-
-  LDFLAGS="$ORIG_LDFLAGS"
-  CPPFLAGS="$ORIG_CPPFLAGS"
-
+  PHP_REQUIRE_CXX()
   PHP_SUBST(RDKAFKA_SHARED_LIBADD)
+  CXXFLAGS="$CXXFLAGS -Wall -Wno-unused-function -Wno-deprecated -Wno-deprecated-declarations"
+  RDKAFKA_SOURCE_DIR="lib/librdkafka/src"
+  SOURCES="${RDKAFKA_SOURCE_DIR}/crc32c.c \
+  ${RDKAFKA_SOURCE_DIR}/rdaddr.c \
+  ${RDKAFKA_SOURCE_DIR}/rdavl.c \
+  ${RDKAFKA_SOURCE_DIR}/rdbuf.c \
+  ${RDKAFKA_SOURCE_DIR}/rdcrc32.c \
+  ${RDKAFKA_SOURCE_DIR}/rddl.c \
+  ${RDKAFKA_SOURCE_DIR}/rdhdrhistogram.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_assignor.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_background.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_broker.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_buf.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_cert.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_cgrp.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_conf.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_event.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_feature.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_idempotence.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_lz4.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_metadata.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_metadata_cache.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_msg.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_msgset_reader.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_msgset_writer.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_offset.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_op.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_partition.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_pattern.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_plugin.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_queue.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_range_assignor.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_request.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_roundrobin_assignor.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_sasl_cyrus.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_sasl.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_sasl_oauthbearer.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_sasl_plain.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_sasl_scram.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_ssl.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_subscription.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_timer.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_topic.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_transport.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_interceptor.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_header.c \
+  ${RDKAFKA_SOURCE_DIR}/rdlist.c \
+  ${RDKAFKA_SOURCE_DIR}/rdlog.c \
+  ${RDKAFKA_SOURCE_DIR}/rdmurmur2.c \
+  ${RDKAFKA_SOURCE_DIR}/rdports.c \
+  ${RDKAFKA_SOURCE_DIR}/rdrand.c \
+  ${RDKAFKA_SOURCE_DIR}/rdregex.c \
+  ${RDKAFKA_SOURCE_DIR}/rdstring.c \
+  ${RDKAFKA_SOURCE_DIR}/rdunittest.c \
+  ${RDKAFKA_SOURCE_DIR}/rdvarint.c \
+  ${RDKAFKA_SOURCE_DIR}/snappy.c \
+  ${RDKAFKA_SOURCE_DIR}/tinycthread.c \
+  ${RDKAFKA_SOURCE_DIR}/tinycthread_extra.c \
+  ${RDKAFKA_SOURCE_DIR}/rdgz.c"
+  SOURCES="$SOURCES rdkafka.c metadata.c metadata_broker.c metadata_topic.c metadata_partition.c metadata_collection.c compat.c conf.c topic.c queue.c message.c fun.c kafka_consumer.c topic_partition.c"
 
-  PHP_NEW_EXTENSION(rdkafka, $SOURCES, $ext_shared)
+  AC_DEFINE(HAVE_RDKAFKALIB,1,[ ])
+  AC_DEFINE(HAVE_RD_KAFKA_MESSAGE_HEADERS,1,[ ])
+  AC_DEFINE(HAS_RD_KAFKA_PURGE,1,[ ])
+  AC_DEFINE(HAS_RD_KAFKA_PARTITIONER_MURMUR2,1,[ ])
+
+  AC_CHECK_LIB(z, gzgets, [
+      PHP_ADD_LIBRARY(z, 1, SWOOLE_SHARED_LIBADD)
+  ])
+  PHP_ADD_LIBRARY(ssl, 1, SWOOLE_SHARED_LIBADD)
+  PHP_ADD_LIBRARY(crypto, 1, SWOOLE_SHARED_LIBADD)
+
+  PHP_NEW_EXTENSION(rdkafka, $SOURCES, $ext_shared,,-DZEND_ENABLE_STATIC_TSRMLS_CACHE=1)
+  PHP_ADD_BUILD_DIR(lib/librdkafka/src)
 fi

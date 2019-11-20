@@ -23,7 +23,7 @@
 #include "php.h"
 #include "php_rdkafka.h"
 #include "php_rdkafka_priv.h"
-#include "librdkafka/rdkafka.h"
+#include "lib/librdkafka/src/rdkafka.h"
 #include "metadata_collection.h"
 #include "metadata_topic.h"
 #include "metadata_broker.h"

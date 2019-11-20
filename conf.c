@@ -25,7 +25,7 @@
 #include "ext/standard/info.h"
 #include "php_rdkafka.h"
 #include "php_rdkafka_priv.h"
-#include "librdkafka/rdkafka.h"
+#include "lib/librdkafka/src/rdkafka.h"
 #include "Zend/zend_exceptions.h"
 #include "ext/spl/spl_exceptions.h"
 #include "conf.h"
