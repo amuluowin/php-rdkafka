@@ -134,7 +134,7 @@ int mtx_lock(mtx_t *mtx)
   }
   return thrd_success;
 #else
-  return pthread_mutex_lock(mtx) == 0 ? thrd_success : thrd_error;
+  // return pthread_mutex_lock(mtx) == 0 ? thrd_success : thrd_error;
   while (mtx_trylock(mtx) == thrd_busy)
   {
     if(swoole_coroutine_is_in()){
