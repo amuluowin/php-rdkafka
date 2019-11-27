@@ -39,7 +39,6 @@ freely, subject to the following restrictions:
   #include <sys/timeb.h>
 #endif
 
-#include "../../../include/coroutine_c_api.h"
 
 /* Standard, good-to-have defines */
 #ifndef NULL
@@ -134,18 +133,7 @@ int mtx_lock(mtx_t *mtx)
   }
   return thrd_success;
 #else
-  // return pthread_mutex_lock(mtx) == 0 ? thrd_success : thrd_error;
-  while (mtx_trylock(mtx) == thrd_busy)
-  {
-    if(swoole_coroutine_is_in()){
-      swoole_coroutine_usleep(1);
-    }
-    else{
-      rd_usleep(1, NULL);
-    }
-  }
-  return thrd_success;
-  
+  return pthread_mutex_lock(mtx) == 0 ? thrd_success : thrd_error;
 #endif
 }
 
