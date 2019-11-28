@@ -6,9 +6,12 @@ PHP_ARG_WITH(rdkafka, for rdkafka support,
 
 if test "$PHP_RDKAFKA" != "no"; then
   PHP_SUBST(RDKAFKA_SHARED_LIBADD)
-  CPPFLAGS="$CPPFLAGS -Wall -Wno-unused-function -Wno-deprecated -Wno-deprecated-declarations"
+  CPPFLAGS="$CPPFLAGS -Wall -Wsign-compare -Wfloat-equal -Wpointer-arith -Wcast-align -llz4  -lm -lzstd  -lsasl2  -lssl  -lcrypto -L/lib -lz  -ldl -lpthread -lrt -lpthread -lrt"
   RDKAFKA_SOURCE_DIR="lib/librdkafka/src"
   SOURCES="${RDKAFKA_SOURCE_DIR}/crc32c.c \
+  ${RDKAFKA_SOURCE_DIR}/lz4.c \
+  ${RDKAFKA_SOURCE_DIR}/lz4frame.c \
+  ${RDKAFKA_SOURCE_DIR}/lz4hc.c \
   ${RDKAFKA_SOURCE_DIR}/rdaddr.c \
   ${RDKAFKA_SOURCE_DIR}/rdavl.c \
   ${RDKAFKA_SOURCE_DIR}/rdbuf.c \
@@ -29,6 +32,8 @@ if test "$PHP_RDKAFKA" != "no"; then
   ${RDKAFKA_SOURCE_DIR}/rdkafka_lz4.c \
   ${RDKAFKA_SOURCE_DIR}/rdkafka_metadata.c \
   ${RDKAFKA_SOURCE_DIR}/rdkafka_metadata_cache.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_mock_handlers.c \
+  ${RDKAFKA_SOURCE_DIR}/rdkafka_mock.c \
   ${RDKAFKA_SOURCE_DIR}/rdkafka_msg.c \
   ${RDKAFKA_SOURCE_DIR}/rdkafka_msgset_reader.c \
   ${RDKAFKA_SOURCE_DIR}/rdkafka_msgset_writer.c \
@@ -66,22 +71,14 @@ if test "$PHP_RDKAFKA" != "no"; then
   ${RDKAFKA_SOURCE_DIR}/snappy.c \
   ${RDKAFKA_SOURCE_DIR}/tinycthread.c \
   ${RDKAFKA_SOURCE_DIR}/tinycthread_extra.c \
-  ${RDKAFKA_SOURCE_DIR}/rdgz.c"
+  ${RDKAFKA_SOURCE_DIR}/rdgz.c \
+  ${RDKAFKA_SOURCE_DIR}/xxhash.c"
   SOURCES="$SOURCES rdkafka.c metadata.c metadata_broker.c metadata_topic.c metadata_partition.c metadata_collection.c compat.c conf.c topic.c queue.c message.c fun.c kafka_consumer.c topic_partition.c"
 
   AC_DEFINE(HAVE_RDKAFKALIB,1,[ ])
   AC_DEFINE(HAVE_RD_KAFKA_MESSAGE_HEADERS,1,[ ])
   AC_DEFINE(HAS_RD_KAFKA_PURGE,1,[ ])
   AC_DEFINE(HAS_RD_KAFKA_PARTITIONER_MURMUR2,1,[ ])
-
-  AC_CHECK_LIB(z, gzgets, [
-      PHP_ADD_LIBRARY(z, 1, SWOOLE_SHARED_LIBADD)
-  ])
-  
-  PHP_ADD_LIBRARY(zstd, 1, SWOOLE_SHARED_LIBADD)
-  PHP_ADD_LIBRARY(ssl, 1, SWOOLE_SHARED_LIBADD)
-  PHP_ADD_LIBRARY(sasl2, 1, SWOOLE_SHARED_LIBADD)
-  PHP_ADD_LIBRARY(crypto, 1, SWOOLE_SHARED_LIBADD)
 
   PHP_NEW_EXTENSION(rdkafka, $SOURCES, $ext_shared,,-DZEND_ENABLE_STATIC_TSRMLS_CACHE=1)
   PHP_ADD_BUILD_DIR(lib/librdkafka/src)
