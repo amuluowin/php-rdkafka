@@ -2,17 +2,18 @@
 Produce, consume queue
 --SKIPIF--
 <?php
-file_exists(__DIR__."/test_env.php") || die("skip");
+require __DIR__ . '/integration-tests-check.php';
 --FILE--
 <?php
-
-require __DIR__."/test_env.php";
+require __DIR__ . '/integration-tests-check.php';
 
 $delivered = 0;
 
 $conf = new RdKafka\Conf();
-if (RD_KAFKA_VERSION >= 0x090000) {
-    $conf->set('broker.version.fallback', TEST_KAFKA_BROKER_VERSION);
+// Required to detect actual reaching of partition EOF for both topics
+$conf->set('enable.partition.eof', 'true');
+if (RD_KAFKA_VERSION >= 0x090000 && false !== getenv('TEST_KAFKA_BROKER_VERSION')) {
+    $conf->set('broker.version.fallback', getenv('TEST_KAFKA_BROKER_VERSION'));
 }
 $conf->setErrorCb(function ($producer, $err, $errstr) {
     printf("%s: %s\n", rd_kafka_err2str($err), $errstr);
@@ -27,7 +28,7 @@ $conf->setDrMsgCb(function ($producer, $msg) use (&$delivered) {
 
 $producer = new RdKafka\Producer($conf);
 
-if ($producer->addBrokers(TEST_KAFKA_BROKERS) < 1) {
+if ($producer->addBrokers(getenv('TEST_KAFKA_BROKERS')) < 1) {
     echo "Failed adding brokers\n";
     exit;
 }
@@ -57,7 +58,7 @@ while ($producer->getOutQLen()) {
 printf("%d messages delivered\n", $delivered);
 
 $consumer = new RdKafka\Consumer($conf);
-$consumer->addBrokers(TEST_KAFKA_BROKERS);
+$consumer->addBrokers(getenv('TEST_KAFKA_BROKERS'));
 
 $queue = $consumer->newQueue();
 
@@ -67,23 +68,26 @@ array_walk($topicNames, function ($topicName) use ($consumer, $queue) {
 });
 
 $messages = [];
-$eof = 0;
+$receivedTopicEofs = [];
 
-while ($eof < 2) {
-    $msg = $queue->consume(60*1000);
+while (count($receivedTopicEofs) < 2) {
+    $msg = $queue->consume(15000);
     if (!$msg) {
+        // Still waiting for messages
         continue;
     }
-    switch ($msg->err) {
-        case RD_KAFKA_RESP_ERR_NO_ERROR:
-            $messages[] = sprintf("Got message: %s from %s", $msg->payload, $msg->topic_name);
-            break;
-        case RD_KAFKA_RESP_ERR__PARTITION_EOF:
-            $eof++;
-            break;
-        default:
-            throw new Exception($message->errstr());
+
+    if (RD_KAFKA_RESP_ERR__PARTITION_EOF === $msg->err) {
+        // Reached actual EOF
+        $receivedTopicEofs[$msg->topic_name] = true;
+        continue;
     }
+
+    if (RD_KAFKA_RESP_ERR_NO_ERROR !== $msg->err) {
+        throw new Exception($msg->errstr(), $msg->err);
+    }
+
+    $messages[] = sprintf("Got message: %s from %s", $msg->payload, $msg->topic_name);
 }
 
 sort($messages);

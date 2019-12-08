@@ -12,14 +12,27 @@ php:
     - 7.1
     - 7.2
     - 7.3
-    - 7.4snapshot
+    - 7.4
     - nightly
 matrix:
     allow_failures:
         - php: nightly
 env:
-    - LIBRDKAFKA_VERSION=0.11.x
-    - LIBRDKAFKA_VERSION=v1.0.1
-    - LIBRDKAFKA_VERSION=v1.1.0
-    - LIBRDKAFKA_VERSION=master
-script: ./.travis/build.sh
+    global:
+        - TEST_KAFKA_BROKERS=localhost:9092
+        - TEST_KAFKA_BROKER_VERSION=2.3
+        - LIBRDKAFKA_REPOSITORY_URL=https://github.com/edenhill/librdkafka.git
+        - LIBRDKAFKA_VERSION=v1.2.2
+    matrix:
+        - LIBRDKAFKA_VERSION=0.11.x
+        - LIBRDKAFKA_VERSION=v1.0.1
+        - LIBRDKAFKA_VERSION=v1.1.0
+        - LIBRDKAFKA_VERSION=v1.2.2
+        - LIBRDKAFKA_VERSION=master
+before_script: 
+    - ./.travis/start-kafka.sh
+script: 
+    - ./.travis/build.sh
+    ### Issues with environmental variables causes this copy to be required
+    - cp tests/test_env.php.sample tests/test_env.php
+    - ./.travis/test.sh

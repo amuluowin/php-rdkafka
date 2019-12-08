@@ -1,13 +1,16 @@
 #!/bin/sh
 
-set -xe
+set -xve
 
-git clone --depth 1 --branch "$LIBRDKAFKA_VERSION" https://github.com/edenhill/librdkafka.git
+if ! [ -d "librdkafka" ]; then
+  git clone --depth 1 --branch "${LIBRDKAFKA_VERSION:-v1.2.2}" "${LIBRDKAFKA_REPOSITORY_URL:-https://github.com/edenhill/librdkafka.git}"
+fi
+
 (
-    cd librdkafka
-    ./configure
-    make
-    sudo make install
+  cd librdkafka
+  ./configure
+  make
+  sudo make install
 )
 sudo ldconfig
 
@@ -17,14 +20,3 @@ phpenv config-rm xdebug.ini || true
 phpize
 CFLAGS='-Werror=implicit-function-declaration' ./configure
 make
-
-export PATH=$TRAVIS_BUILD_DIR/.travis:$PATH
-
-showmem=
-if grep -q 'cfgfiles.*mem' run-tests.php; then
-    echo "Will enable the --show-mem flag"
-    showmem=--show-mem
-fi
-
-PHP=$(which php)
-REPORT_EXIT_STATUS=1 TEST_PHP_EXECUTABLE="$PHP" "$PHP" run-tests.php -q -m --show-diff $showmem

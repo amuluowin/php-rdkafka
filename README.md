@@ -140,7 +140,8 @@ while (true) {
     // The first argument is the partition (again).
     // The second argument is the timeout.
     $msg = $topic->consume(0, 1000);
-    if (null === $msg) {
+    if (null === $msg || $msg->err === RD_KAFKA_RESP_ERR__PARTITION_EOF) {
+        // Constant check required by librdkafka 0.11.6. Newer librdkafka versions will return NULL instead.
         continue;
     } elseif ($msg->err) {
         echo $msg->errstr(), "\n";
@@ -185,7 +186,8 @@ Next, retrieve the consumed messages from the queue:
 while (true) {
     // The only argument is the timeout.
     $msg = $queue->consume(1000);
-    if (null === $msg) {
+    if (null === $msg || $msg->err === RD_KAFKA_RESP_ERR__PARTITION_EOF) {
+        // Constant check required by librdkafka 0.11.6. Newer librdkafka versions will return NULL instead.
         continue;
     } elseif ($msg->err) {
         echo $msg->errstr(), "\n";

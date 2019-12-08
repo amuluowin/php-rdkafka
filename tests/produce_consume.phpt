@@ -2,17 +2,16 @@
 Produce, consume
 --SKIPIF--
 <?php
-file_exists(__DIR__."/test_env.php") || die("skip");
+require __DIR__ . '/integration-tests-check.php';
 --FILE--
 <?php
-
-require __DIR__."/test_env.php";
+require __DIR__ . '/integration-tests-check.php';
 
 $delivered = 0;
 
 $conf = new RdKafka\Conf();
-if (RD_KAFKA_VERSION >= 0x090000) {
-    $conf->set('broker.version.fallback', TEST_KAFKA_BROKER_VERSION);
+if (RD_KAFKA_VERSION >= 0x090000 && false !== getenv('TEST_KAFKA_BROKER_VERSION')) {
+    $conf->set('broker.version.fallback', getenv('TEST_KAFKA_BROKER_VERSION'));
 }
 $conf->setErrorCb(function ($producer, $err, $errstr) {
     printf("%s: %s\n", rd_kafka_err2str($err), $errstr);
@@ -27,7 +26,7 @@ $conf->setDrMsgCb(function ($producer, $msg) use (&$delivered) {
 
 $producer = new RdKafka\Producer($conf);
 
-if ($producer->addBrokers(TEST_KAFKA_BROKERS) < 1) {
+if ($producer->addBrokers(getenv('TEST_KAFKA_BROKERS')) < 1) {
     echo "Failed adding brokers\n";
     exit;
 }
@@ -52,7 +51,7 @@ while ($producer->getOutQLen()) {
 printf("%d messages delivered\n", $delivered);
 
 $consumer = new RdKafka\Consumer($conf);
-$consumer->addBrokers(TEST_KAFKA_BROKERS);
+$consumer->addBrokers(getenv('TEST_KAFKA_BROKERS'));
 
 $topic = $consumer->newTopic($topicName);
 $topic->consumeStart(0, RD_KAFKA_OFFSET_BEGINNING);
@@ -60,20 +59,17 @@ $topic->consumeStart(0, RD_KAFKA_OFFSET_BEGINNING);
 $messages = [];
 
 while (true) {
-    $msg = $topic->consume(0, 60*1000);
-    if (!$msg) {
-        continue;
+    $msg = $topic->consume(0, 1000);
+    // librdkafka before 1.0 returns message with RD_KAFKA_RESP_ERR__PARTITION_EOF when reaching topic end.
+    if (!$msg || $msg->err === RD_KAFKA_RESP_ERR__PARTITION_EOF) {
+        break;
     }
-    switch ($msg->err) {
-        case RD_KAFKA_RESP_ERR_NO_ERROR:
-            printf("Got message: %s\n", $msg->payload);
-            break;
-        case RD_KAFKA_RESP_ERR__PARTITION_EOF:
-            echo "EOF\n";
-            break 2;
-        default:
-            throw new Exception($message->errstr());
+    
+    if (RD_KAFKA_RESP_ERR_NO_ERROR !== $msg->err) {
+        throw new Exception($msg->errstr(), $msg->err);
     }
+    
+    printf("Got message: %s\n", $msg->payload);
 }
 --EXPECT--
 10 messages delivered
@@ -87,4 +83,3 @@ Got message: message 6
 Got message: message 7
 Got message: message 8
 Got message: message 9
-EOF

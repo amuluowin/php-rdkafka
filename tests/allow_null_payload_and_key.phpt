@@ -2,16 +2,15 @@
 Allow null payload
 --SKIPIF--
 <?php
-file_exists(__DIR__."/test_env.php") || die("skip");
+require __DIR__ . '/integration-tests-check.php';
 --FILE--
 <?php
-
-require __DIR__."/test_env.php";
+require __DIR__ . '/integration-tests-check.php';
 
 $topicName = sprintf('test_rdkafka_%s', uniqid());
 
 $producer = new RdKafka\Producer();
-$producer->addBrokers(TEST_KAFKA_BROKERS);
+$producer->addBrokers(getenv('TEST_KAFKA_BROKERS'));
 $topic = $producer->newTopic($topicName);
 
 $topic->produce(0, 0);
@@ -21,7 +20,7 @@ while ($producer->getOutQLen() > 0) {
 }
 
 $consumer = new RdKafka\Consumer();
-$consumer->addBrokers(TEST_KAFKA_BROKERS);
+$consumer->addBrokers(getenv('TEST_KAFKA_BROKERS'));
 
 $topic = $consumer->newTopic($topicName);
 $topic->consumeStart(0, RD_KAFKA_OFFSET_BEGINNING);
@@ -31,11 +30,11 @@ while (true) {
     if ($message === null) {
         continue;
     }
-    switch ($message->err) {
-        case RD_KAFKA_RESP_ERR_NO_ERROR:
-            var_dump($message->payload);
-            var_dump($message->key);
-            break 2;
+
+    if (RD_KAFKA_RESP_ERR_NO_ERROR === $message->err) {
+        var_dump($message->payload);
+        var_dump($message->key);
+        break;
     }
 }
 

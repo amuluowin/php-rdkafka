@@ -2,7 +2,7 @@
 RdKafka\Conf
 --SKIPIF--
 <?php
-RD_KAFKA_VERSION >= 0x090000 || die("skip");
+RD_KAFKA_VERSION >= 0x090000 || die("skip librdkafka too old");
 --FILE--
 <?php
 

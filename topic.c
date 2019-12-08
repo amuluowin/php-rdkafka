@@ -618,9 +618,8 @@ PHP_METHOD(RdKafka__ProducerTopic, producev)
             RD_KAFKA_V_END
     );
 
-    rd_kafka_headers_destroy(headers);
-
     if (err != RD_KAFKA_RESP_ERR_NO_ERROR) {
+        rd_kafka_headers_destroy(headers);
         zend_throw_exception(ce_kafka_exception, rd_kafka_err2str(err), err TSRMLS_CC);
         return;
     }
@@ -675,7 +674,7 @@ void kafka_topic_minit(TSRMLS_D) { /* {{{ */
 
     INIT_NS_CLASS_ENTRY(ce, "RdKafka", "Topic", kafka_topic_fe);
     ce_kafka_topic = zend_register_internal_class(&ce TSRMLS_CC);
-    ce_kafka_topic->ce_flags = ZEND_ACC_EXPLICIT_ABSTRACT_CLASS;
+    ce_kafka_topic->ce_flags |= ZEND_ACC_EXPLICIT_ABSTRACT_CLASS;
     ce_kafka_topic->create_object = kafka_topic_new;
 
     INIT_NS_CLASS_ENTRY(ce, "RdKafka", "ConsumerTopic", kafka_consumer_topic_fe);

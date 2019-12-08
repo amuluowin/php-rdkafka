@@ -2,38 +2,18 @@
 RdKafka\Conf
 --SKIPIF--
 <?php
-RD_KAFKA_VERSION >= 0x090000 || die("skip");
-file_exists(__DIR__."/test_env.php") || die("skip");
+RD_KAFKA_VERSION >= 0x090000 || die("skip librdkafka too old");
+(!isset($_ENV['TESTS_DONT_SKIP_RISKY']) || $_ENV['TESTS_DONT_SKIP_RISKY']) && die("skip Callbacks often fail and are skipped by default");
+require __DIR__ . '/integration-tests-check.php';
 --FILE--
 <?php
-
-require __DIR__."/test_env.php";
+require __DIR__ . '/integration-tests-check.php';
 
 $conf = new RdKafka\Conf();
 
-$topicConf = new RdKafka\TopicConf();
-$topicConf->set('auto.offset.reset', 'smallest');
-
-$conf->setDefaultTopicConf($topicConf);
-$conf->set('metadata.broker.list', TEST_KAFKA_BROKERS);
+$conf->set('auto.offset.reset', 'smallest');
+$conf->set('metadata.broker.list', getenv('TEST_KAFKA_BROKERS'));
 $conf->set('group.id', sprintf("test_rdkafka_group_%s", uniqid()));
-$conf->set('statistics.interval.ms', 10);
-
-$conf->setOffsetCommitCb(function ($consumer, $error, $topicPartitions) {
-    echo "Offset " . $topicPartitions[0]->getOffset() . " committed.\n";
-});
-
-$consumerLagFound = false;
-$conf->setStatsCb(function ($consumer, $json) use (&$consumerLagFound) {
-    if ($consumerLagFound) {
-        return;
-    }
-
-    // At some point there should be a consumer lag of 9
-    if (false !== strpos($json, 'consumer_lag":9')) {
-        $consumerLagFound = true;
-    }
-});
 
 $producer = new RdKafka\Producer($conf);
 
@@ -52,29 +32,44 @@ while ($producer->getOutQLen()) {
 // Make sure there is enough time for the stats_cb to pick up the consumer lag
 sleep(1);
 
+$conf = new RdKafka\Conf();
+
+$conf->set('auto.offset.reset', 'smallest');
+$conf->set('metadata.broker.list', getenv('TEST_KAFKA_BROKERS'));
+$conf->set('group.id', sprintf("test_rdkafka_group_%s", uniqid()));
+$conf->set('statistics.interval.ms', 10);
+
+$conf->setOffsetCommitCb(function ($consumer, $error, $topicPartitions) {
+    echo "Offset " . $topicPartitions[0]->getOffset() . " committed.\n";
+});
+
+$statsCbCalled = false;
+$conf->setStatsCb(function ($consumer, $json) use (&$statsCbCalled) {
+    if ($statsCbCalled) {
+        return;
+    }
+
+    $statsCbCalled = true;
+});
+
 $consumer = new RdKafka\KafkaConsumer($conf);
 $consumer->subscribe([$topicName]);
 
 while (true) {
-    $msg = $consumer->consume(60 * 1000);
+    $msg = $consumer->consume(15000);
 
-    if (!$msg) {
-        continue;
+    if (!$msg || RD_KAFKA_RESP_ERR__PARTITION_EOF === $msg->err) {
+        break;
     }
 
-    switch ($msg->err) {
-        case RD_KAFKA_RESP_ERR_NO_ERROR:
-            $consumer->commit($msg);
-
-            break;
-        case RD_KAFKA_RESP_ERR__PARTITION_EOF:
-            break 2;
-        default:
-            throw new Exception($msg->errstr());
+    if (RD_KAFKA_RESP_ERR_NO_ERROR !== $msg->err) {
+        throw new Exception($msg->errstr(), $msg->err);
     }
+
+    $consumer->commit($msg);
 }
 
-var_dump($consumerLagFound);
+var_dump($statsCbCalled);
 
 --EXPECT--
 Offset 1 committed.

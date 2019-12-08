@@ -10,10 +10,10 @@
   <email>arnaud.lb@gmail.com</email>
   <active>yes</active>
  </lead>
- <date>2019-10-04</date>
+ <date>2019-12-08</date>
  <time>12:00:00</time>
  <version>
-  <release>4.0.0</release>
+  <release>4.0.1</release>
   <api>4.0.0</api>
  </version>
  <stability>
@@ -22,41 +22,33 @@
  </stability>
  <license uri="http://opensource.org/licenses/mit-license.php">MIT License</license>
  <notes>
-  BREAKING CHANGE: Since version 4.0, the client longer polls for network events
-  at shutdown (during object destructor). This behaviour didn't give enought
-  control to the user in case of server issue, and could cause the script to
-  hang while terminating.
+  BREAKING CHANGE: Since version 4.0, the client no longer polls for network
+  events at shutdown (during object destructor). This behaviour didn't give
+  enough control to the user in case of server issue, and could cause the script
+  to hang while terminating.
 
-  Starting from this version, programs MUST now call flush() before shutting
-  down, otherwise some messages and callbacks may be lost.
+  Starting from 4.0, programs MUST call flush() before shutting down, otherwise
+  some messages and callbacks may be lost.
 
   ## Features
 
-  * Added RdKafka\Kafka::offsetsForTimes(), RdKafka\KafkaConsumer::offsetsForTimes() (#238, #270, @nick-zh)
-  * Added RdKafka\KafkaConsumer::getOffsetPositions() (#244, @nick-zh)
-  * Added RdKafka\Kafka::purge() (#255, @nick-zh)
-  * Added RdKafka\Kafka::flush() (#264, @nick-zh)
-  * Added RdKafka\ConsumerTopic::consumeBatch() (#256, @nick-zh)
-  * Added RdKafka\Conf::setLogCb() (#253, @nick-zh)
-  * Added RdKafka\KafkaConsumer::queryWatermarkOffsets() (#271, @nick-zh)
-  * Added RdKafka\KafkaConsumer::close() (#144, @TiMESPLiNTER)
+  * Added RdKafka\ConsumerTopic::consumeCallback() (#310, @nick-zh)
 
   ## Enhancements
 
-  * Support block on full producer queue (RD_KAFKA_MSG_F_BLOCK) (#245, @nick-zh)
-  * Add additional partitioners (#267, @nick-zh)
-  * Fix phpinfo output (#172, @TiMESPLiNTER)
-  * Don't poll in destruct anymore (#264, #278, @nick-zh)
+  * Run integration tests in CI (#223, @Steveb-p)
+  * Improved README (#295 #297 #298, #307 @Steveb-p @sndsgd @nick-zh)
+  * Fix windows test cases (#296, @cmb69)
+  * Add testsuite in pecl archive (#291, @remicollet)
+  * Add editor config (#308, @Steveb-p)
 
   ## Bugfixes
 
-  * Fix segfault, remove Producer::newQueue (#273, @nick-zh)
-
-  ## General
-
-  * Dropping support for librdkafka below 0.11 (#247, @arnaud-lb)
-  * Update build matrix PHP 7.3 + nightly, librdkafka 1.x + master (#249, @arnaud-lb)
-  * Deprecating deprecated librdkafka functions (#266, #254, #251, @nick-zh)
+  * Fix build (#290, @nick-zh)
+  * Fix segfault during module shutdown (#293, @arnaud-lb @nick-zh)
+  * Fix RdKafka\Topic visibility in PHP 7.4 (#316, @nick-zh)
+  * Fix headers memory management in producev (#318 , @nick-zh)
+  * Fix partition number in error (#321, @nick-zh)
  </notes>
  <contents>
   <dir name="/">
@@ -135,6 +127,57 @@
  <providesextension>rdkafka</providesextension>
  <extsrcrelease/>
  <changelog>
+  <release>
+   <date>2019-10-04</date>
+   <time>12:00:00</time>
+   <version>
+    <release>4.0.0</release>
+    <api>4.0.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="http://opensource.org/licenses/mit-license.php">MIT License</license>
+   <notes>
+    BREAKING CHANGE: Since version 4.0, the client longer polls for network events
+    at shutdown (during object destructor). This behaviour didn't give enought
+    control to the user in case of server issue, and could cause the script to
+    hang while terminating.
+
+    Starting from this version, programs MUST now call flush() before shutting
+    down, otherwise some messages and callbacks may be lost.
+
+    ## Features
+
+    * Added RdKafka\Kafka::offsetsForTimes(), RdKafka\KafkaConsumer::offsetsForTimes() (#238, #270, @nick-zh)
+    * Added RdKafka\KafkaConsumer::getOffsetPositions() (#244, @nick-zh)
+    * Added RdKafka\Kafka::purge() (#255, @nick-zh)
+    * Added RdKafka\Kafka::flush() (#264, @nick-zh)
+    * Added RdKafka\ConsumerTopic::consumeBatch() (#256, @nick-zh)
+    * Added RdKafka\Conf::setLogCb() (#253, @nick-zh)
+    * Added RdKafka\KafkaConsumer::queryWatermarkOffsets() (#271, @nick-zh)
+    * Added RdKafka\KafkaConsumer::close() (#144, @TiMESPLiNTER)
+
+    ## Enhancements
+
+    * Support block on full producer queue (RD_KAFKA_MSG_F_BLOCK) (#245, @nick-zh)
+    * Add additional partitioners (#267, @nick-zh)
+    * Fix phpinfo output (#172, @TiMESPLiNTER)
+    * Don't poll in destruct anymore (#264, #278, @nick-zh)
+
+    ## Bugfixes
+
+    * Fix segfault, remove Producer::newQueue (#273, @nick-zh)
+
+    ## General
+
+    * Dropping support for librdkafka below 0.11 (#247, @arnaud-lb)
+    * Update build matrix PHP 7.3 + nightly, librdkafka 1.x + master (#249, @arnaud-lb)
+    * Deprecating deprecated librdkafka functions (#266, #254, #251, @nick-zh)
+   </notes>
+
+  </release>
   <release>
    <date>2019-07-08</date>
    <time>12:00:00</time>
