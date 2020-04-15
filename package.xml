@@ -10,10 +10,10 @@
   <email>arnaud.lb@gmail.com</email>
   <active>yes</active>
  </lead>
- <date>2019-12-08</date>
+ <date>2020-02-07</date>
  <time>12:00:00</time>
  <version>
-  <release>4.0.1</release>
+  <release>4.0.3</release>
   <api>4.0.0</api>
  </version>
  <stability>
@@ -30,32 +30,20 @@
   Starting from 4.0, programs MUST call flush() before shutting down, otherwise
   some messages and callbacks may be lost.
 
-  ## Features
-
-  * Added RdKafka\ConsumerTopic::consumeCallback() (#310, @nick-zh)
-
-  ## Enhancements
-
-  * Run integration tests in CI (#223, @Steveb-p)
-  * Improved README (#295 #297 #298, #307 @Steveb-p @sndsgd @nick-zh)
-  * Fix windows test cases (#296, @cmb69)
-  * Add testsuite in pecl archive (#291, @remicollet)
-  * Add editor config (#308, @Steveb-p)
+  ## Improvements
+  - Add partition check for offsetStore (#331, @nick-zh)
+  - Naming consistency for setting in tests (#339, @romainneutron)
 
   ## Bugfixes
+  - Fix headers containing null bytes (#338,  @arnaud-lb, @dirx @nick-zh)
+  - Fix topic deconstruct for high level consumer (#333, @nick-zh)
 
-  * Fix build (#290, @nick-zh)
-  * Fix segfault during module shutdown (#293, @arnaud-lb @nick-zh)
-  * Fix RdKafka\Topic visibility in PHP 7.4 (#316, @nick-zh)
-  * Fix headers memory management in producev (#318 , @nick-zh)
-  * Fix partition number in error (#321, @nick-zh)
+  ## Documentation
+  - Fix doc example (#340, @Steveb-p)
+  - Remove outdated and duplicate examples (#341, @nick-zh)
  </notes>
  <contents>
   <dir name="/">
-   <dir name="examples">
-    <file role="doc" name="consumer.php"/>
-    <file role="doc" name="producer.php"/>
-   </dir>
    <file role="doc" name="CREDITS"/>
    <file role="doc" name="LICENSE"/>
    <file role="doc" name="README.md"/>
@@ -95,6 +83,7 @@
     <file role="test" name="allow_null_payload_and_key.phpt"/>
     <file role="test" name="allow_null_payload.phpt"/>
     <file role="test" name="bug115.phpt"/>
+    <file role="test" name="bug330.phpt"/>
     <file role="test" name="bug74.phpt"/>
     <file role="test" name="bug88.phpt"/>
     <file role="test" name="bugConfSetArgument.phpt"/>
@@ -103,11 +92,13 @@
     <file role="test" name="conf.phpt"/>
     <file role="test" name="conf_setDefaultTopicConf.phpt"/>
     <file role="test" name="constants.phpt"/>
+    <file role="test" name="integration-tests-check.php"/>
     <file role="test" name="message_headers.phpt"/>
     <file role="test" name="produce_consume.phpt"/>
     <file role="test" name="produce_consume_queue.phpt"/>
     <file role="test" name="rd_kafka_get_err_descs.phpt"/>
     <file role="test" name="test0.phpt"/>
+    <file role="test" name="test_env.php.sample"/>
     <file role="test" name="topic_conf.phpt"/>
     <file role="test" name="topic_partition.phpt"/>
    </dir>
@@ -127,6 +118,75 @@
  <providesextension>rdkafka</providesextension>
  <extsrcrelease/>
  <changelog>
+  <release>
+   <date>2019-12-15</date>
+   <time>12:00:00</time>
+   <version>
+    <release>4.0.2</release>
+    <api>4.0.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="http://opensource.org/licenses/mit-license.php">MIT License</license>
+   <notes>
+    BREAKING CHANGE: Since version 4.0, the client no longer polls for network
+    events at shutdown (during object destructor). This behaviour didn't give
+    enough control to the user in case of server issue, and could cause the script
+    to hang while terminating.
+
+    Starting from 4.0, programs MUST call flush() before shutting down, otherwise
+    some messages and callbacks may be lost.
+
+    ## Bugfixes
+
+    * Fix partition 0 exposed as NULL in Message (#327 reverts #321, @arnaud-lb @nick-zh)
+    * Fix memory leak in consume() when messages have headers (#323, @nick-zh)
+   </notes>
+  </release>
+  <release>
+   <date>2019-12-08</date>
+   <time>12:00:00</time>
+   <version>
+    <release>4.0.1</release>
+    <api>4.0.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="http://opensource.org/licenses/mit-license.php">MIT License</license>
+   <notes>
+    BREAKING CHANGE: Since version 4.0, the client no longer polls for network
+    events at shutdown (during object destructor). This behaviour didn't give
+    enough control to the user in case of server issue, and could cause the script
+    to hang while terminating.
+
+    Starting from 4.0, programs MUST call flush() before shutting down, otherwise
+    some messages and callbacks may be lost.
+
+    ## Features
+
+    * Added RdKafka\ConsumerTopic::consumeCallback() (#310, @nick-zh)
+
+    ## Enhancements
+
+    * Run integration tests in CI (#223, @Steveb-p)
+    * Improved README (#295 #297 #298, #307 @Steveb-p @sndsgd @nick-zh)
+    * Fix windows test cases (#296, @cmb69)
+    * Add testsuite in pecl archive (#291, @remicollet)
+    * Add editor config (#308, @Steveb-p)
+
+    ## Bugfixes
+
+    * Fix build (#290, @nick-zh)
+    * Fix segfault during module shutdown (#293, @arnaud-lb @nick-zh)
+    * Fix RdKafka\Topic visibility in PHP 7.4 (#316, @nick-zh)
+    * Fix headers memory management in producev (#318 , @nick-zh)
+    * Fix partition number in error (#321, @nick-zh)
+   </notes>
+  </release>
   <release>
    <date>2019-10-04</date>
    <time>12:00:00</time>

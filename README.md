@@ -31,11 +31,11 @@ The source of the documentation can be found [here](https://github.com/arnaud-lb
 
 ## Installation
 
-https://arnaud-lb.github.io/php-rdkafka/phpdoc/rdkafka.setup.html
+https://arnaud-lb.github.io/php-rdkafka-doc/phpdoc/rdkafka.setup.html
 
 ## Examples
 
-https://arnaud-lb.github.io/php-rdkafka/phpdoc/rdkafka.examples.html
+https://arnaud-lb.github.io/php-rdkafka-doc/phpdoc/rdkafka.examples.html
 
 ## Usage
 
@@ -50,7 +50,7 @@ servers) to it:
 ``` php
 <?php
 $conf = new RdKafka\Conf();
-$conf->set('log_level', LOG_DEBUG);
+$conf->set('log_level', (string) LOG_DEBUG);
 $conf->set('debug', 'all');
 $rk = new RdKafka\Producer($conf);
 $rk->addBrokers("10.0.0.1:9092,10.0.0.2:9092");
@@ -101,7 +101,7 @@ $rk->flush($timeout_ms);
 
 ### High-level consuming
 
-The RdKafka\KafkaConsumer class supports automatic partition assignment/revocation. See the example [here](https://arnaud-lb.github.io/php-rdkafka/phpdoc/rdkafka.examples.html#example-1).
+The RdKafka\KafkaConsumer class supports automatic partition assignment/revocation. See the example [here](https://arnaud-lb.github.io/php-rdkafka-doc/phpdoc/rdkafka.examples.html#example-1).
 
 ### Low-level consuming
 
@@ -111,7 +111,7 @@ servers) to it:
 ``` php
 <?php
 $conf = new Conf();
-$conf->set('log_level', LOG_LEVEL);
+$conf->set('log_level', (string) LOG_DEBUG);
 $conf->set('debug', 'all');
 $rk = new RdKafka\Consumer($conf);
 $rk->addBrokers("10.0.0.1,10.0.0.2");
@@ -239,7 +239,7 @@ librdkafka will buffer up to 1GB of messages for each consumed partition by defa
 
 ### topic.metadata.refresh.sparse and topic.metadata.refresh.interval.ms
 
-Each consumer and procuder instance will fetch topics metadata at an interval defined by the ``topic.metadata.refresh.interval.ms`` parameter. Depending on your librdkafka version, the parameter defaults to 10 seconds, or 600 seconds.
+Each consumer and producer instance will fetch topics metadata at an interval defined by the ``topic.metadata.refresh.interval.ms`` parameter. Depending on your librdkafka version, the parameter defaults to 10 seconds, or 600 seconds.
 
 librdkafka fetches the metadata for all topics of the cluster by default. Setting ``topic.metadata.refresh.sparse`` to the string ``"true"`` makes sure that librdkafka fetches only the topics he uses.
 
@@ -302,7 +302,7 @@ while ($producer->getOutQLen() > 0) {
 
 ## Documentation
 
-https://arnaud-lb.github.io/php-rdkafka/phpdoc/book.rdkafka.html  
+https://arnaud-lb.github.io/php-rdkafka-doc/phpdoc/book.rdkafka.html  
 The source of the documentation can be found [here](https://github.com/arnaud-lb/php-rdkafka-doc)
 
 ## Asking for Help

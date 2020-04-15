@@ -54,10 +54,6 @@ typedef struct _toppar {
     int32_t             partition;
 } toppar;
 
-static const zend_function_entry empty_function_entries[] = {
-    PHP_FE_END
-};
-
 static zend_object_handlers kafka_object_handlers;
 zend_object_handlers kafka_default_object_handlers;
 
@@ -239,9 +235,6 @@ int is_consuming_toppar(kafka_object * intern, rd_kafka_topic_t * rkt, int32_t p
 }
 
 /* {{{ private constructor */
-ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka___private_construct, 0, 0, 0)
-ZEND_END_ARG_INFO()
-
 PHP_METHOD(RdKafka, __construct)
 {
     zend_throw_exception(NULL, "Private constructor", 0 TSRMLS_CC);
@@ -369,7 +362,7 @@ PHP_METHOD(RdKafka__Kafka, getMetadata)
 {
     zend_bool all_topics;
     zval *only_zrkt;
-    long timeout_ms;
+    zend_long timeout_ms;
     rd_kafka_resp_err_t err;
     kafka_object *intern;
     const rd_kafka_metadata_t *metadata;
@@ -412,7 +405,7 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(RdKafka__Kafka, setLogLevel)
 {
     kafka_object *intern;
-    long level;
+    zend_long level;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &level) == FAILURE) {
         return;
@@ -534,7 +527,7 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(RdKafka__Kafka, poll)
 {
     kafka_object *intern;
-    long timeout;
+    zend_long timeout;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &timeout) == FAILURE) {
         return;
@@ -559,7 +552,7 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(RdKafka__Kafka, flush)
 {
     kafka_object *intern;
-    long timeout;
+    zend_long timeout;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &timeout) == FAILURE) {
         return;
@@ -585,7 +578,7 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(RdKafka__Kafka, purge)
 {
     kafka_object *intern;
-    long purge_flags;
+    zend_long purge_flags;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &purge_flags) == FAILURE) {
         return;
@@ -617,7 +610,8 @@ PHP_METHOD(RdKafka__Kafka, queryWatermarkOffsets)
     kafka_object *intern;
     char *topic;
     arglen_t topic_length;
-    long partition, low, high, timeout;
+    long low, high;
+    zend_long partition, timeout;
     zval *lowResult, *highResult;
     rd_kafka_resp_err_t err;
 
@@ -656,7 +650,7 @@ PHP_METHOD(RdKafka__Kafka, offsetsForTimes)
     HashTable *htopars = NULL;
     kafka_object *intern;
     rd_kafka_topic_partition_list_t *topicPartitions;
-    long timeout_ms;
+    zend_long timeout_ms;
     rd_kafka_resp_err_t err;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "hl", &htopars, &timeout_ms) == FAILURE) {
@@ -696,7 +690,7 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(RdKafka__Kafka, setLogger)
 {
     kafka_object *intern;
-    long id;
+    zend_long id;
     void (*logger) (const rd_kafka_t * rk, int level, const char *fac, const char *buf);
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &id) == FAILURE) {

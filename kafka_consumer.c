@@ -380,7 +380,7 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(RdKafka__KafkaConsumer, consume)
 {
     object_intern *intern;
-    long timeout_ms;
+    zend_long timeout_ms;
     rd_kafka_message_t *rkmessage, rkmessage_tmp = {0};
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &timeout_ms) == FAILURE) {
@@ -549,7 +549,7 @@ PHP_METHOD(RdKafka__KafkaConsumer, getMetadata)
 {
     zend_bool all_topics;
     zval *only_zrkt;
-    long timeout_ms;
+    zend_long timeout_ms;
     rd_kafka_resp_err_t err;
     object_intern *intern;
     const rd_kafka_metadata_t *metadata;
@@ -633,12 +633,6 @@ PHP_METHOD(RdKafka__KafkaConsumer, newTopic)
     }
 
     topic_intern->rkt = rkt;
-#if PHP_MAJOR_VERSION >= 7
-    topic_intern->zrk = *getThis();
-#else
-    topic_intern->zrk = getThis();
-#endif
-    Z_ADDREF_P(P_ZEVAL(topic_intern->zrk));
 }
 /* }}} */
 
@@ -653,7 +647,7 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(RdKafka__KafkaConsumer, getCommittedOffsets)
 {
     HashTable *htopars = NULL;
-    long timeout_ms;
+    zend_long timeout_ms;
     object_intern *intern;
     rd_kafka_resp_err_t err;
     rd_kafka_topic_partition_list_t *topics;
@@ -737,7 +731,7 @@ PHP_METHOD(RdKafka__KafkaConsumer, offsetsForTimes)
     HashTable *htopars = NULL;
     object_intern *intern;
     rd_kafka_topic_partition_list_t *topicPartitions;
-    long timeout_ms;
+    zend_long timeout_ms;
     rd_kafka_resp_err_t err;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "hl", &htopars, &timeout_ms) == FAILURE) {
@@ -782,7 +776,8 @@ PHP_METHOD(RdKafka__KafkaConsumer, queryWatermarkOffsets)
     object_intern *intern;
     char *topic;
     arglen_t topic_length;
-    long partition, low, high, timeout;
+    long low, high;
+    zend_long partition, timeout;
     zval *lowResult, *highResult;
     rd_kafka_resp_err_t err;
 

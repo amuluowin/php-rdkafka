@@ -44,6 +44,7 @@ $headers = [
         'key2' => 'value2',
         'key3' => 'value3',
     ],
+    ['gzencoded' => gzencode('gzdata')],
     [],
     null,
     ['key'],
@@ -80,6 +81,9 @@ while (true) {
 
     $headersString = isset($msg->headers) ? $msg->headers : [];
     array_walk($headersString, function(&$value, $key) {
+        if ('gzencoded' === $key) {
+            $value = gzdecode($value);
+        }
         $value = "{$key}: {$value}";
     });
     if (empty($headersString)) {
@@ -90,9 +94,10 @@ while (true) {
     printf("Got message: %s | Headers: %s\n", $msg->payload, $headersString);
 }
 --EXPECT--
-5 messages delivered
+6 messages delivered
 Got message: message 0 | Headers: key: value
 Got message: message 1 | Headers: key1: value1, key2: value2, key3: value3
-Got message: message 2 | Headers: none
+Got message: message 2 | Headers: gzencoded: gzdata
 Got message: message 3 | Headers: none
 Got message: message 4 | Headers: none
+Got message: message 5 | Headers: none

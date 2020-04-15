@@ -113,9 +113,14 @@ static inline char *rdkafka_hash_get_current_key_ex(HashTable *ht, HashPosition 
 
 #define rdkafka_add_assoc_string(arg, key, str) add_assoc_string(arg, key, str)
 
+#define rdkafka_add_assoc_stringl(arg, key, str, str_length) add_assoc_stringl(arg, key, str, str_length)
+
 #define RDKAFKA_RETURN_STRING(str) RETURN_STRING(str)
 #define RDKAFKA_ZVAL_STRING(zv, str) ZVAL_STRING(zv, str)
 #else /* PHP < 7 */
+
+typedef long zend_long;
+#define ZEND_LONG_FMT "%ld"
 
 typedef int arglen_t;
 
@@ -240,6 +245,8 @@ static inline char **rdkafka_hash_get_current_key_ex(HashTable *ht, HashPosition
 }
 
 #define rdkafka_add_assoc_string(arg, key, str) add_assoc_string(arg, key, str, 1)
+
+#define rdkafka_add_assoc_stringl(arg, key, str, str_length) add_assoc_stringl(arg, key, str, str_length, 1)
 
 #define RDKAFKA_RETURN_STRING(str) RETURN_STRING(str, 1)
 #define RDKAFKA_ZVAL_STRING(zv, str) ZVAL_STRING(zv, str, 1)

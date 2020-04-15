@@ -56,9 +56,7 @@ void kafka_message_new(zval *return_value, const rd_kafka_message_t *message TSR
     if (message->rkt) {
         zend_update_property_string(NULL, return_value, ZEND_STRL("topic_name"), rd_kafka_topic_name(message->rkt) TSRMLS_CC);
     }
-    if (message->partition) {
-        zend_update_property_long(NULL, return_value, ZEND_STRL("partition"), message->partition TSRMLS_CC);
-    }
+    zend_update_property_long(NULL, return_value, ZEND_STRL("partition"), message->partition TSRMLS_CC);
     if (message->payload) {
         zend_update_property_long(NULL, return_value, ZEND_STRL("timestamp"), timestamp TSRMLS_CC);
         zend_update_property_stringl(NULL, return_value, ZEND_STRL("payload"), message->payload, message->len TSRMLS_CC);
@@ -79,9 +77,10 @@ void kafka_message_new(zval *return_value, const rd_kafka_message_t *message TSR
                 if (header_response != RD_KAFKA_RESP_ERR_NO_ERROR) {
                     break;
                 }
-                rdkafka_add_assoc_string(&headers_array, header_name, (char*)header_value);
+                rdkafka_add_assoc_stringl(&headers_array, header_name, (const char*)header_value, header_size);
             }
             zend_update_property(NULL, return_value, ZEND_STRL("headers"), &headers_array TSRMLS_CC);
+            zval_ptr_dtor(&headers_array);
         }
     }
 #endif

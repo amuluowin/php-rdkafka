@@ -11,7 +11,7 @@ require __DIR__ . '/integration-tests-check.php';
 
 $conf = new RdKafka\Conf();
 
-$conf->set('auto.offset.reset', 'smallest');
+$conf->set('auto.offset.reset', 'earliest');
 $conf->set('metadata.broker.list', getenv('TEST_KAFKA_BROKERS'));
 $conf->set('group.id', sprintf("test_rdkafka_group_%s", uniqid()));
 
@@ -34,7 +34,7 @@ sleep(1);
 
 $conf = new RdKafka\Conf();
 
-$conf->set('auto.offset.reset', 'smallest');
+$conf->set('auto.offset.reset', 'earliest');
 $conf->set('metadata.broker.list', getenv('TEST_KAFKA_BROKERS'));
 $conf->set('group.id', sprintf("test_rdkafka_group_%s", uniqid()));
 $conf->set('statistics.interval.ms', 10);

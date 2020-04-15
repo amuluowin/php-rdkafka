@@ -47,7 +47,7 @@ static void kafka_topic_free(zend_object *object TSRMLS_DC) /* {{{ */
 {
     kafka_topic_object *intern = get_custom_object(kafka_topic_object, object);
 
-    if (intern->rkt) {
+    if (ZE_ISDEF(intern->zrk)) {
         kafka_object *kafka_intern = get_kafka_object(P_ZEVAL(intern->zrk) TSRMLS_CC);
         if (kafka_intern) {
             zend_hash_index_del(&kafka_intern->topics, (zend_ulong)intern);
@@ -123,8 +123,8 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(RdKafka__ConsumerTopic, consumeCallback)
 {
     php_callback cb;
-    long partition;
-    long timeout_ms;
+    zend_long partition;
+    zend_long timeout_ms;
     long result;
     kafka_topic_object *intern;
 
@@ -166,8 +166,8 @@ PHP_METHOD(RdKafka__ConsumerTopic, consumeQueueStart)
     zval *zrkqu;
     kafka_topic_object *intern;
     kafka_queue_object *queue_intern;
-    long partition;
-    long offset;
+    zend_long partition;
+    zend_long offset;
     int ret;
     rd_kafka_resp_err_t err;
     kafka_object *kafka_intern;
@@ -200,7 +200,7 @@ PHP_METHOD(RdKafka__ConsumerTopic, consumeQueueStart)
         zend_throw_exception_ex(
             ce_kafka_exception,
             0 TSRMLS_CC,
-            "%s:%d is already being consumed by the same Consumer instance",
+            "%s:" ZEND_LONG_FMT " is already being consumed by the same Consumer instance",
             rd_kafka_topic_name(intern->rkt),
             partition
         );
@@ -230,8 +230,8 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(RdKafka__ConsumerTopic, consumeStart)
 {
     kafka_topic_object *intern;
-    long partition;
-    long offset;
+    zend_long partition;
+    zend_long offset;
     int ret;
     rd_kafka_resp_err_t err;
     kafka_object *kafka_intern;
@@ -259,7 +259,7 @@ PHP_METHOD(RdKafka__ConsumerTopic, consumeStart)
         zend_throw_exception_ex(
             ce_kafka_exception,
             0 TSRMLS_CC,
-            "%s:%d is already being consumed by the same Consumer instance",
+            "%s:" ZEND_LONG_FMT " is already being consumed by the same Consumer instance",
             rd_kafka_topic_name(intern->rkt),
             partition
         );
@@ -288,7 +288,7 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(RdKafka__ConsumerTopic, consumeStop)
 {
     kafka_topic_object *intern;
-    long partition;
+    zend_long partition;
     int ret;
     rd_kafka_resp_err_t err;
     kafka_object *kafka_intern;
@@ -335,8 +335,8 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(RdKafka__ConsumerTopic, consume)
 {
     kafka_topic_object *intern;
-    long partition;
-    long timeout_ms;
+    zend_long partition;
+    zend_long timeout_ms;
     rd_kafka_message_t *message;
     rd_kafka_resp_err_t err;
 
@@ -383,8 +383,8 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(RdKafka__ConsumerTopic, consumeBatch)
 {
     kafka_topic_object *intern;
-    long partition, timeout_ms, batch_size, result, i;
-    zval messages;
+    zend_long partition, timeout_ms, batch_size;
+    long result, i;
     rd_kafka_message_t **rkmessages;
     rd_kafka_resp_err_t err;
 
@@ -439,11 +439,16 @@ ZEND_END_ARG_INFO()
 PHP_METHOD(RdKafka__ConsumerTopic, offsetStore)
 {
     kafka_topic_object *intern;
-    long partition;
-    long offset;
+    zend_long partition;
+    zend_long offset;
     rd_kafka_resp_err_t err;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ll", &partition, &offset) == FAILURE) {
+        return;
+    }
+
+    if (partition < 0 || partition > 0x7FFFFFFF) {
+        zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC, "Out of range value '%ld' for $partition", partition TSRMLS_CC);
         return;
     }
 
@@ -494,8 +499,8 @@ ZEND_END_ARG_INFO()
 
 PHP_METHOD(RdKafka__ProducerTopic, produce)
 {
-    long partition;
-    long msgflags;
+    zend_long partition;
+    zend_long msgflags;
     char *payload = NULL;
     arglen_t payload_len = 0;
     char *key = NULL;
@@ -545,8 +550,8 @@ ZEND_END_ARG_INFO()
 
 PHP_METHOD(RdKafka__ProducerTopic, producev)
 {
-    long partition;
-    long msgflags;
+    zend_long partition;
+    zend_long msgflags;
     char *payload = NULL;
     arglen_t payload_len = 0;
     char *key = NULL;
@@ -559,7 +564,7 @@ PHP_METHOD(RdKafka__ProducerTopic, producev)
     char *header_key;
     zeval *header_value;
     rd_kafka_headers_t *headers;
-    long timestamp_ms = 0;
+    zend_long timestamp_ms = 0;
     zend_bool timestamp_ms_is_null = 0;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ll|s!s!h!l!", &partition, &msgflags, &payload, &payload_len, &key, &key_len, &headersParam, &timestamp_ms, &timestamp_ms_is_null) == FAILURE) {
@@ -594,7 +599,7 @@ PHP_METHOD(RdKafka__ProducerTopic, producev)
                 header_key,
                 -1, // Auto detect header title length
                 Z_STRVAL_P(ZEVAL(header_value)),
-                -1 // Auto detect header value length
+                Z_STRLEN_P(ZEVAL(header_value))
             );
         }
     } else {

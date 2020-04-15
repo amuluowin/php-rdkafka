@@ -103,7 +103,7 @@ PHP_FUNCTION(rd_kafka_get_err_descs)
  */
 PHP_FUNCTION(rd_kafka_err2str)
 {
-    long err;
+    zend_long err;
     const char *errstr;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &err) == FAILURE) {
@@ -134,7 +134,7 @@ PHP_FUNCTION(rd_kafka_errno)
  * Converts `errno` to a rdkafka error code */
 PHP_FUNCTION(rd_kafka_errno2err)
 {
-    long errnox;
+    zend_long errnox;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &errnox) == FAILURE) {
         return;
@@ -162,7 +162,7 @@ PHP_FUNCTION(rd_kafka_thread_cnt)
  */
 PHP_FUNCTION(rd_kafka_offset_tail)
 {
-    long cnt;
+    zend_long cnt;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &cnt) == FAILURE) {
         return;
