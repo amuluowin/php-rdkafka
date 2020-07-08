@@ -9,6 +9,7 @@ if (!class_exists("RdKafka\\KafkaConsumer")) {
 <?php
 $conf = new RdKafka\Conf();
 $conf->set('metadata.broker.list', '127.0.0.1:9092');
+
 $consumer = new RdKafka\KafkaConsumer($conf);
 echo "ok\n";
 --EXPECTF--

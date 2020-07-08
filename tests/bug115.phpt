@@ -23,11 +23,11 @@ $conf->setDrMsgCb(function ($producer, $msg) use (&$delivered) {
     }
     $delivered++;
 });
+$conf->set('metadata.broker.list', getenv('TEST_KAFKA_BROKERS'));
 
 $topicName = sprintf("test_rdkafka_%s", uniqid());
 
 $consumer = new RdKafka\Consumer($conf);
-$consumer->addBrokers(getenv('TEST_KAFKA_BROKERS'));
 
 $topic = $consumer->newTopic($topicName);
 $topic->consumeStart(0, RD_KAFKA_OFFSET_BEGINNING);

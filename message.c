@@ -48,7 +48,7 @@ void kafka_message_new(zval *return_value, const rd_kafka_message_t *message TSR
     const void *header_value = NULL;
     size_t header_size = 0;
     zval headers_array;
-    int i;
+    uint i;
 #endif /* HAVE_RD_KAFKA_MESSAGE_HEADERS */
 
     zend_update_property_long(NULL, return_value, ZEND_STRL("err"), message->err TSRMLS_CC);

@@ -21,13 +21,9 @@ $conf->setDrMsgCb(function ($producer, $msg) use (&$delivered) {
     }
     $delivered++;
 });
+$conf->set('metadata.broker.list', getenv('TEST_KAFKA_BROKERS'));
 
 $producer = new RdKafka\Producer($conf);
-
-if ($producer->addBrokers(getenv('TEST_KAFKA_BROKERS')) < 1) {
-    echo "Failed adding brokers\n";
-    exit;
-}
 
 $topicName = sprintf("test_rdkafka_%s", uniqid());
 
@@ -62,7 +58,6 @@ while ($producer->getOutQLen()) {
 printf("%d messages delivered\n", $delivered);
 
 $consumer = new RdKafka\Consumer($conf);
-$consumer->addBrokers(getenv('TEST_KAFKA_BROKERS'));
 
 $topic = $consumer->newTopic($topicName);
 $topic->consumeStart(0, RD_KAFKA_OFFSET_BEGINNING);

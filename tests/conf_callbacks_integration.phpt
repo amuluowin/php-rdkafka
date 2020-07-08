@@ -3,7 +3,7 @@ RdKafka\Conf
 --SKIPIF--
 <?php
 RD_KAFKA_VERSION >= 0x090000 || die("skip librdkafka too old");
-(!isset($_ENV['TESTS_DONT_SKIP_RISKY']) || $_ENV['TESTS_DONT_SKIP_RISKY']) && die("skip Callbacks often fail and are skipped by default");
+(!isset($_ENV['TESTS_DONT_SKIP_RISKY']) || $_ENV['TESTS_DONT_SKIP_RISKY']) && die("skip Risky/broken test");
 require __DIR__ . '/integration-tests-check.php';
 --FILE--
 <?php
@@ -13,6 +13,7 @@ $conf = new RdKafka\Conf();
 
 $conf->set('auto.offset.reset', 'earliest');
 $conf->set('metadata.broker.list', getenv('TEST_KAFKA_BROKERS'));
+
 $conf->set('group.id', sprintf("test_rdkafka_group_%s", uniqid()));
 
 $producer = new RdKafka\Producer($conf);

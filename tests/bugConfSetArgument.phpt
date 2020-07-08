@@ -13,6 +13,7 @@ class TestBug extends RdKafka\Conf
 
 $conf = new TestBug();
 $conf->set('metadata.broker.list', '127.0.0.1');
+
 echo "done" . PHP_EOL;
 --EXPECT--
 done

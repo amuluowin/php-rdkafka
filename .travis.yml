@@ -2,37 +2,121 @@ dist: xenial
 language: php
 compiler:
     - gcc
-addons:
-    apt:
-        packages:
-            - valgrind
-php:
-    - 5.6
-    - 7.0
-    - 7.1
-    - 7.2
-    - 7.3
-    - 7.4
-    - nightly
-matrix:
-    allow_failures:
-        - php: nightly
+services:
+    - docker
 env:
     global:
-        - TEST_KAFKA_BROKERS=localhost:9092
+        - TEST_KAFKA_BROKERS=kafka:9092
         - TEST_KAFKA_BROKER_VERSION=2.3
         - LIBRDKAFKA_REPOSITORY_URL=https://github.com/edenhill/librdkafka.git
-        - LIBRDKAFKA_VERSION=v1.2.2
-    matrix:
-        - LIBRDKAFKA_VERSION=0.11.x
-        - LIBRDKAFKA_VERSION=v1.0.1
-        - LIBRDKAFKA_VERSION=v1.1.0
-        - LIBRDKAFKA_VERSION=v1.2.2
-        - LIBRDKAFKA_VERSION=master
-before_script: 
-    - ./.travis/start-kafka.sh
-script: 
-    - ./.travis/build.sh
-    ### Issues with environmental variables causes this copy to be required
+        - PHP_RDKAFKA_CFLAGS='-Wall -Werror=implicit-function-declaration'
+jobs:
+    allow_failures:
+        - env: LIBRDKAFKA_VERSION=master
+    fast_finish: true
+    include:
+        # Slow tests
+        - php: 7.4
+          env: LIBRDKAFKA_VERSION=v1.4.4 MEMORY_CHECK=1 PHP_VERSION=7.4.0 PHP_RDKAFKA_CFLAGS='-Wall -Werror -Wno-deprecated-declarations'
+          addons:
+              apt:
+                  packages:
+                      - valgrind
+                      - libonig-dev
+                      - libzip-dev
+
+        # librdkafka 1.4.4
+        - php: 7.4
+          env: LIBRDKAFKA_VERSION=v1.4.4
+        - php: 7.3
+          env: LIBRDKAFKA_VERSION=v1.4.4
+        - php: 7.2
+          env: LIBRDKAFKA_VERSION=v1.4.4
+        - php: 7.1
+          env: LIBRDKAFKA_VERSION=v1.4.4
+        - php: 7.0
+          env: LIBRDKAFKA_VERSION=v1.4.4
+        - php: 5.6
+          env: LIBRDKAFKA_VERSION=v1.4.4
+
+        # librdkafka 1.1.0
+        - php: 7.4
+          env: LIBRDKAFKA_VERSION=v1.1.0
+        - php: 7.3
+          env: LIBRDKAFKA_VERSION=v1.1.0
+        - php: 7.2
+          env: LIBRDKAFKA_VERSION=v1.1.0
+        - php: 7.1
+          env: LIBRDKAFKA_VERSION=v1.1.0
+        - php: 7.0
+          env: LIBRDKAFKA_VERSION=v1.1.0
+        - php: 5.6
+          env: LIBRDKAFKA_VERSION=v1.1.0
+
+        # librdkafka 1.0.1
+        - php: 7.4
+          env: LIBRDKAFKA_VERSION=v1.0.1
+        - php: 7.3
+          env: LIBRDKAFKA_VERSION=v1.0.1
+        - php: 7.2
+          env: LIBRDKAFKA_VERSION=v1.0.1
+        - php: 7.1
+          env: LIBRDKAFKA_VERSION=v1.0.1
+        - php: 7.0
+          env: LIBRDKAFKA_VERSION=v1.0.1
+        - php: 5.6
+          env: LIBRDKAFKA_VERSION=v1.0.1
+
+        # librdkafka 0.11.x
+        - php: 7.4
+          env: LIBRDKAFKA_VERSION=0.11.x
+        - php: 7.3
+          env: LIBRDKAFKA_VERSION=0.11.x
+        - php: 7.2
+          env: LIBRDKAFKA_VERSION=0.11.x
+        - php: 7.1
+          env: LIBRDKAFKA_VERSION=0.11.x
+        - php: 7.0
+          env: LIBRDKAFKA_VERSION=0.11.x
+        - php: 5.6
+          env: LIBRDKAFKA_VERSION=0.11.x
+
+        # librdkafka master
+        - php: 7.4
+          env: LIBRDKAFKA_VERSION=master
+        - php: 7.3
+          env: LIBRDKAFKA_VERSION=master
+        - php: 7.2
+          env: LIBRDKAFKA_VERSION=master
+        - php: 7.1
+          env: LIBRDKAFKA_VERSION=master
+        - php: 7.0
+          env: LIBRDKAFKA_VERSION=master
+        - php: 5.6
+          env: LIBRDKAFKA_VERSION=master
+
+before_install:
+    - |
+        # Use a debug php build when MEMORY_CHECK=1
+        set -e;
+        if [ -n "$MEMORY_CHECK" ]; then
+            export PHP_BUILD_CONFIGURE_OPTS="--enable-debug";
+            git clone git://github.com/php-build/php-build.git $HOME/.phpenv/plugins/php-build;
+            travis_wait phpenv install $PHP_VERSION;
+            phpenv rehash;
+            phpenv global $PHP_VERSION;
+        fi
+    - |
+        # Start Kafka and install an up-to-date librdkafka
+        docker network create kafka_network
+        docker pull wurstmeister/zookeeper:3.4.6
+        docker run -d --network kafka_network --name zookeeper wurstmeister/zookeeper:3.4.6
+        docker pull wurstmeister/kafka:2.12-2.3.1
+        docker run -d -p 9092:9092 --network kafka_network -e "KAFKA_AUTO_CREATE_TOPICS_ENABLE=true" -e "KAFKA_CREATE_TOPICS=test-topic:1:1:compact" -e "KAFKA_ADVERTISED_HOST_NAME=kafka" -e "KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181" -e "KAFKA_ADVERTISED_PORT=9092" --name kafka wurstmeister/kafka:2.12-2.3.1
+        export KAFKA_BROKER=kafka:9092
+        sudo sh -c 'echo "\n127.0.0.1  kafka\n" >> /etc/hosts'
+install:
+    - .travis/build.sh
+script:
     - cp tests/test_env.php.sample tests/test_env.php
-    - ./.travis/test.sh
+    - .travis/test.sh
