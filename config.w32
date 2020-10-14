@@ -12,7 +12,7 @@ if (PHP_RDKAFKA != "no") {
 		AC_DEFINE('HAVE_NEW_KAFKA_CONSUMER', 1, '');
 		EXTENSION("rdkafka", "rdkafka.c metadata.c metadata_broker.c metadata_topic.c \
 				metadata_partition.c metadata_collection.c compat.c conf.c \
-				topic.c queue.c message.c fun.c kafka_consumer.c topic_partition.c");
+				topic.c queue.c message.c fun.c kafka_consumer.c topic_partition.c kafka_error_exception.c");
 
 		AC_DEFINE('HAVE_RDKAFKA', 1, '');
 	} else {

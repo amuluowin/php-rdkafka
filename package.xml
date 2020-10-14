@@ -10,10 +10,10 @@
   <email>arnaud.lb@gmail.com</email>
   <active>yes</active>
  </lead>
- <date>2020-02-07</date>
+ <date>2020-10-08</date>
  <time>12:00:00</time>
  <version>
-  <release>4.0.3</release>
+  <release>4.0.4</release>
   <api>4.0.0</api>
  </version>
  <stability>
@@ -30,17 +30,14 @@
   Starting from 4.0, programs MUST call flush() before shutting down, otherwise
   some messages and callbacks may be lost.
 
-  ## Improvements
-  - Add partition check for offsetStore (#331, @nick-zh)
-  - Naming consistency for setting in tests (#339, @romainneutron)
-
   ## Bugfixes
-  - Fix headers containing null bytes (#338,  @arnaud-lb, @dirx @nick-zh)
-  - Fix topic deconstruct for high level consumer (#333, @nick-zh)
+  - Fix crash during shurtdown (#367, @nick-zh, @sofire)
+
+  ## Enhancements
+  - Improved CI (@Steveb-p, @arnaud-lb)
 
   ## Documentation
-  - Fix doc example (#340, @Steveb-p)
-  - Remove outdated and duplicate examples (#341, @nick-zh)
+  - Improved doc (@nick-zh, @Steveb-p)
  </notes>
  <contents>
   <dir name="/">
@@ -57,6 +54,8 @@
    <file role="src" name="fun.h"/>
    <file role="src" name="kafka_consumer.c"/>
    <file role="src" name="kafka_consumer.h"/>
+   <file role="src" name="kafka_error_exception.c"/>
+   <file role="src" name="kafka_error_exception.h"/>
    <file role="src" name="message.c"/>
    <file role="src" name="message.h"/>
    <file role="src" name="metadata.c"/>
@@ -118,6 +117,40 @@
  <providesextension>rdkafka</providesextension>
  <extsrcrelease/>
  <changelog>
+  <release>
+   <date>2020-02-07</date>
+   <time>12:00:00</time>
+   <version>
+    <release>4.0.3</release>
+    <api>4.0.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="http://opensource.org/licenses/mit-license.php">MIT License</license>
+   <notes>
+    BREAKING CHANGE: Since version 4.0, the client no longer polls for network
+    events at shutdown (during object destructor). This behaviour didn't give
+    enough control to the user in case of server issue, and could cause the script
+    to hang while terminating.
+
+    Starting from 4.0, programs MUST call flush() before shutting down, otherwise
+    some messages and callbacks may be lost.
+
+    ## Improvements
+    - Add partition check for offsetStore (#331, @nick-zh)
+    - Naming consistency for setting in tests (#339, @romainneutron)
+
+    ## Bugfixes
+    - Fix headers containing null bytes (#338,  @arnaud-lb, @dirx @nick-zh)
+    - Fix topic deconstruct for high level consumer (#333, @nick-zh)
+
+    ## Documentation
+    - Fix doc example (#340, @Steveb-p)
+    - Remove outdated and duplicate examples (#341, @nick-zh)
+   </notes>
+  </release>
   <release>
    <date>2019-12-15</date>
    <time>12:00:00</time>

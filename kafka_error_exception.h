@@ -15,55 +15,11 @@
   | Author: Arnaud Le Blanc <arnaud.lb@gmail.com>                        |
   +----------------------------------------------------------------------+
 */
+#ifdef HAS_RD_KAFKA_TRANSACTIONS
 
-/* $Id$ */
-
-#ifndef PHP_RDKAFKA_H
-#define PHP_RDKAFKA_H
-
-#include "lib/librdkafka/src/rdkafka.h"
-#include "compat.h"
-#include "conf.h"
-
-#ifndef PHP_FE_END
-#define PHP_FE_END { NULL, NULL, NULL, 0, 0 }
+#include "zeval.h"
+#include "librdkafka/rdkafka.h"
+extern zend_class_entry * ce_kafka_error;
+void kafka_error_minit(TSRMLS_D);
+void create_kafka_error(zval *return_value, const rd_kafka_error_t *error TSRMLS_DC);
 #endif
-
-typedef struct _kafka_object {
-#if PHP_MAJOR_VERSION < 7
-    zend_object             std;
-#endif
-    rd_kafka_type_t         type;
-    rd_kafka_t              *rk;
-    kafka_conf_callbacks    cbs;
-    HashTable               consuming;
-	HashTable				topics;
-	HashTable				queues;
-#if PHP_MAJOR_VERSION >= 7
-    zend_object             std;
-#endif
-} kafka_object;
-
-PHP_METHOD(RdKafka, __construct);
-
-extern zend_module_entry rdkafka_module_entry;
-#define phpext_rdkafka_ptr &rdkafka_module_entry
-
-#define PHP_RDKAFKA_VERSION "4.0.5-dev"
-
-extern zend_object_handlers kafka_default_object_handlers;
-extern zend_class_entry * ce_kafka_exception;
-
-#ifdef PHP_WIN32
-#	define PHP_RDKAFKA_API __declspec(dllexport)
-#elif defined(__GNUC__) && __GNUC__ >= 4
-#	define PHP_RDKAFKA_API __attribute__ ((visibility("default")))
-#else
-#	define PHP_RDKAFKA_API
-#endif
-
-#ifdef ZTS
-#include "TSRM.h"
-#endif
-
-#endif	/* PHP_RDKAFKA_H */

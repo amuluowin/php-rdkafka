@@ -22,6 +22,10 @@
 #include "config.h"
 #endif
 
+#ifdef HAS_RD_KAFKA_TRANSACTIONS
+#include "kafka_error_exception.h"
+#endif
+
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
@@ -766,8 +770,143 @@ PHP_METHOD(RdKafka__Producer, __construct)
 }
 /* }}} */
 
+#ifdef HAS_RD_KAFKA_TRANSACTIONS
+
+/* {{{ proto int RdKafka\Producer::initTransactions(int timeout_ms)
+   Initializes transactions, needs to be done before producing and starting a transaction */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_init_transactions, 0, 0, 1)
+    ZEND_ARG_INFO(0, timeout_ms)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(RdKafka__Producer, initTransactions)
+{
+    kafka_object *intern;
+    zend_long timeout_ms;
+    const rd_kafka_error_t *error;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &timeout_ms) == FAILURE) {
+        return;
+    }
+
+    intern = get_kafka_object(getThis() TSRMLS_CC);
+    if (!intern) {
+        return;
+    }
+
+    error = rd_kafka_init_transactions(intern->rk, timeout_ms);
+
+    if (NULL == error) {
+        return;
+    }
+
+    create_kafka_error(return_value, error TSRMLS_CC);
+    zend_throw_exception_object(return_value TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ proto int RdKafka\Producer::beginTransaction()
+   Start a transaction */
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_begin_transaction, 0, 0, 0)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(RdKafka__Producer, beginTransaction)
+{
+    kafka_object *intern;
+    const rd_kafka_error_t *error;
+
+    intern = get_kafka_object(getThis() TSRMLS_CC);
+    if (!intern) {
+        return;
+    }
+
+    error = rd_kafka_begin_transaction(intern->rk);
+
+    if (NULL == error) {
+        return;
+    }
+
+    create_kafka_error(return_value, error TSRMLS_CC);
+    zend_throw_exception_object(return_value TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ proto int RdKafka\Producer::commitTransaction(int timeout_ms)
+   Commit a transaction */
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_commit_transaction, 0, 0, 1)
+    ZEND_ARG_INFO(0, timeout_ms)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(RdKafka__Producer, commitTransaction)
+{
+    kafka_object *intern;
+    zend_long timeout_ms;
+    const rd_kafka_error_t *error;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &timeout_ms) == FAILURE) {
+        return;
+    }
+
+    intern = get_kafka_object(getThis() TSRMLS_CC);
+    if (!intern) {
+        return;
+    }
+
+    error = rd_kafka_commit_transaction(intern->rk, timeout_ms);
+
+    if (NULL == error) {
+        return;
+    }
+
+    create_kafka_error(return_value, error TSRMLS_CC);
+    zend_throw_exception_object(return_value TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ proto int RdKafka\Producer::abortTransaction(int timeout_ms)
+   Commit a transaction */
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_kafka_abort_transaction, 0, 0, 1)
+    ZEND_ARG_INFO(0, timeout_ms)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(RdKafka__Producer, abortTransaction)
+{
+    kafka_object *intern;
+    zend_long timeout_ms;
+    const rd_kafka_error_t *error;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &timeout_ms) == FAILURE) {
+        return;
+    }
+
+    intern = get_kafka_object(getThis() TSRMLS_CC);
+    if (!intern) {
+        return;
+    }
+
+    error = rd_kafka_abort_transaction(intern->rk, timeout_ms);
+
+    if (NULL == error) {
+        return;
+    }
+
+    create_kafka_error(return_value, error TSRMLS_CC);
+    zend_throw_exception_object(return_value TSRMLS_CC);
+}
+/* }}} */
+
+#endif
+
 static const zend_function_entry kafka_producer_fe[] = {
     PHP_ME(RdKafka__Producer, __construct, arginfo_kafka_producer___construct, ZEND_ACC_PUBLIC)
+#ifdef HAS_RD_KAFKA_TRANSACTIONS
+    PHP_ME(RdKafka__Producer, initTransactions, arginfo_kafka_init_transactions, ZEND_ACC_PUBLIC)
+    PHP_ME(RdKafka__Producer, beginTransaction, arginfo_kafka_begin_transaction, ZEND_ACC_PUBLIC)
+    PHP_ME(RdKafka__Producer, commitTransaction, arginfo_kafka_commit_transaction, ZEND_ACC_PUBLIC)
+    PHP_ME(RdKafka__Producer, abortTransaction, arginfo_kafka_abort_transaction, ZEND_ACC_PUBLIC)
+#endif
     PHP_FE_END
 };
 
@@ -867,6 +1006,9 @@ PHP_MINIT_FUNCTION(rdkafka)
     ce_kafka_exception = rdkafka_register_internal_class_ex(&ce, zend_exception_get_default(TSRMLS_C) TSRMLS_CC);
 
     kafka_conf_minit(TSRMLS_C);
+#ifdef HAS_RD_KAFKA_TRANSACTIONS
+    kafka_error_minit(TSRMLS_C);
+#endif
     kafka_kafka_consumer_minit(TSRMLS_C);
     kafka_message_minit(TSRMLS_C);
     kafka_metadata_minit(TSRMLS_C);
