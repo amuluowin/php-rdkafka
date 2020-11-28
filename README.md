@@ -19,7 +19,7 @@ The source of the documentation can be found [here](https://github.com/arnaud-lb
    * [Producing](#producing)
    * [High-level consuming](#high-level-consuming)
    * [Low-level consuming](#low-level-consuming)
-   * [Low-level consuming form multiple topics / partitions](#low-level-consuming-from-multiple-topics--partitions)
+   * [Low-level consuming from multiple topics / partitions](#low-level-consuming-from-multiple-topics--partitions)
    * [Using stored offsets](#using-stored-offsets)
    * [Interesting configuration parameters](#interesting-configuration-parameters)
      * [queued.max.messages.kbytes](#queuedmaxmessageskbytes)
